@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Complaints - Civic Eye</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1><i class="fas fa-eye"></i> <a href="{{ url_for('home') }}">Civic Eye</a></h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="{{ url_for('report_page') }}"><i class="fas fa-plus-circle"></i> Report Issue</a></li>
+                    <li><a href="{{ url_for('track_page') }}" class="active"><i class="fas fa-search"></i> Track</a></li>
+                    <li><a href="{{ url_for('solutions_page') }}"><i class="fas fa-lightbulb"></i> Solutions</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                        <div class="alert alert-info">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="container">
+            <section class="track-preview">
+                <h2><i class="fas fa-search"></i> Advanced Complaint Tracking</h2>
+                <div class="tracking-showcase">
+                    <img src="{{ url_for('static', filename='images/complaint tracking_1757355893674.webp') }}" alt="Real-time Complaint Tracking Dashboard" class="tracking-dashboard-image">
+                    <div class="tracking-info">
+                        <h3>Real-time Dashboard</h3>
+                        <p>Monitor your complaints with our advanced tracking system featuring live updates, progress indicators, and comprehensive analytics.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="track-section">
+                <h2><i class="fas fa-search"></i> Track Your Complaint</h2>
+                <p class="section-subtitle">Enter your complaint ID to check the status</p>
+                
+                <form action="{{ url_for('check_status') }}" method="post" class="track-form">
+                    <div class="search-group">
+                        <input type="text" name="complaint_id" placeholder="Enter Complaint ID" required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Check Status
+                        </button>
+                    </div>
+                </form>
+
+                {% if record %}
+                <div class="status-result">
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h3><i class="fas fa-info-circle"></i> Complaint Details</h3>
+                            <div class="status-badge status-{{ record.status }}">
+                                {{ record.status.replace('_', ' ').title() }}
+                            </div>
+                        </div>
+                        
+                        <div class="status-details">
+                            <div class="detail-item">
+                                <strong><i class="fas fa-hashtag"></i> ID:</strong>
+                                <span>{{ record.report_id }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong><i class="fas fa-calendar"></i> Submitted:</strong>
+                                <span>{{ record.created_at }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong><i class="fas fa-tags"></i> Issue Type:</strong>
+                                <span>{{ record.issue_type.title() }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <strong><i class="fas fa-edit"></i> Description:</strong>
+                                <span>{{ record.text or 'No description provided' }}</span>
+                            </div>
+                            {% if record.location %}
+                            <div class="detail-item">
+                                <strong><i class="fas fa-map-marker-alt"></i> Location:</strong>
+                                <span>Lat: {{ record.location.latitude }}, Lng: {{ record.location.longitude }}</span>
+                            </div>
+                            {% endif %}
+                            {% if record.fake %}
+                            <div class="detail-item">
+                                <strong><i class="fas fa-exclamation-triangle"></i> Status:</strong>
+                                <span class="warning">Flagged for review (Fake Score: {{ "%.2f"|format(record.fake_score) }})</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="status-progress">
+                            <div class="progress-steps">
+                                <div class="step {{ 'active' if record.status in ['submitted', 'in_progress', 'resolved'] else '' }}">
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>Submitted</span>
+                                </div>
+                                <div class="step {{ 'active' if record.status in ['in_progress', 'resolved'] else '' }}">
+                                    <i class="fas fa-cogs"></i>
+                                    <span>In Progress</span>
+                                </div>
+                                <div class="step {{ 'active' if record.status == 'resolved' else '' }}">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Resolved</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if record.complaint_text %}
+                        <div class="complaint-text">
+                            <h4><i class="fas fa-file-alt"></i> Generated Complaint</h4>
+                            <div class="complaint-content">{{ record.complaint_text }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

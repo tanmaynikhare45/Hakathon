@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Solutions - Civic Eye</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1><i class="fas fa-eye"></i> <a href="{{ url_for('home') }}">Civic Eye</a></h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="{{ url_for('report_page') }}"><i class="fas fa-plus-circle"></i> Report Issue</a></li>
+                    <li><a href="{{ url_for('track_page') }}"><i class="fas fa-search"></i> Track</a></li>
+                    <li><a href="{{ url_for('solutions_page') }}" class="active"><i class="fas fa-lightbulb"></i> Solutions</a></li>
+                    <li><a href="{{ url_for('resources_page') }}"><i class="fas fa-book"></i> Resources</a></li>
+                    <li><a href="{{ url_for('about_page') }}"><i class="fas fa-info-circle"></i> About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <section class="solutions-hero">
+                <h2><i class="fas fa-lightbulb"></i> Smart City Solutions</h2>
+                <p class="section-subtitle">Discover how AI and IoT technologies are transforming urban infrastructure</p>
+            </section>
+
+            <div class="solutions-grid">
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-road"></i>
+                    </div>
+                    <h3>Pothole Detection</h3>
+                    <p>AI-powered cameras and sensors automatically scan roads to detect potholes. The system marks their exact location on a digital map and alerts the municipal team. This ensures quicker repairs, fewer accidents, and safer driving conditions for citizens.</p>
+                    <div class="solution-features">
+                        <span class="feature-tag"><i class="fas fa-camera"></i> Computer Vision</span>
+                        <span class="feature-tag"><i class="fas fa-map"></i> GPS Mapping</span>
+                        <span class="feature-tag"><i class="fas fa-bell"></i> Real-time Alerts</span>
+                    </div>
+                </div>
+
+                <div class="solution-card featured-solution">
+                    <div class="solution-visual">
+                        <img src="{{ url_for('static', filename='images/garbage monitering_1757355893675.png') }}" alt="Smart Garbage Monitoring System" class="solution-image">
+                    </div>
+                    <div class="solution-icon">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    <h3>Smart Garbage Monitoring</h3>
+                    <p>AI-powered IoT sensors and augmented reality interfaces monitor garbage bins in real-time. Smart waste management with predictive analytics, route optimization, and automated alerts for efficient collection.</p>
+                    <div class="solution-features">
+                        <span class="feature-tag"><i class="fas fa-sensor"></i> IoT Sensors</span>
+                        <span class="feature-tag"><i class="fas fa-mobile"></i> Mobile Alerts</span>
+                        <span class="feature-tag"><i class="fas fa-chart-bar"></i> Analytics</span>
+                    </div>
+                </div>
+
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h3>Water Leak Detection</h3>
+                    <p>Our IoT-enabled water monitoring system detects leaks in pipelines early. Using real-time sensors, even small leaks are identified before they cause flooding or water loss. This helps in saving water, reducing costs, and preventing infrastructure damage.</p>
+                    <div class="solution-features">
+                        <span class="feature-tag"><i class="fas fa-water"></i> Flow Monitoring</span>
+                        <span class="feature-tag"><i class="fas fa-exclamation-triangle"></i> Early Warning</span>
+                        <span class="feature-tag"><i class="fas fa-save"></i> Water Conservation</span>
+                    </div>
+                </div>
+
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Smart Street Lighting</h3>
+                    <p>Intelligent street lighting system that automatically adjusts brightness based on ambient conditions and pedestrian activity. Motion sensors detect movement and brighten lights accordingly, while dimming during low activity periods to save energy.</p>
+                    <div class="solution-features">
+                        <span class="feature-tag"><i class="fas fa-sun"></i> Auto Dimming</span>
+                        <span class="feature-tag"><i class="fas fa-running"></i> Motion Detection</span>
+                        <span class="feature-tag"><i class="fas fa-battery-three-quarters"></i> Energy Efficient</span>
+                    </div>
+                </div>
+
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h3>Complaint Tracking</h3>
+                    <p>Citizens can track their complaints directly through the Civic Eye platform. Every complaint gets a unique ID and real-time updates (Received → In Progress → Resolved). This ensures transparency, accountability, and trust between citizens and authorities.</p>
+                    <div class="solution-features">
+                        <span class="feature-tag"><i class="fas fa-hashtag"></i> Unique ID</span>
+                        <span class="feature-tag"><i class="fas fa-sync"></i> Real-time Updates</span>
+                        <span class="feature-tag"><i class="fas fa-eye"></i> Transparency</span>
+                    </div>
+                </div>
+
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>AI Fraud Detection</h3>
+                    <p>Advanced machine learning algorithms analyze complaint patterns, text similarity, and location data to identify potentially fake or duplicate reports. This prevents system abuse and ensures resources are allocated to genuine issues.</p>
+                    <div class="solution-features">
+                        <span class="feature-tag"><i class="fas fa-brain"></i> Machine Learning</span>
+                        <span class="feature-tag"><i class="fas fa-search"></i> Pattern Analysis</span>
+                        <span class="feature-tag"><i class="fas fa-ban"></i> Spam Prevention</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="tech-stack-section">
+                <h2><i class="fas fa-cogs"></i> Technology Stack</h2>
+                <div class="tech-grid">
+                    <div class="tech-item">
+                        <i class="fas fa-robot"></i>
+                        <h4>Artificial Intelligence</h4>
+                        <p>Computer vision, NLP, and machine learning for intelligent issue detection</p>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-wifi"></i>
+                        <h4>IoT Integration</h4>
+                        <p>Smart sensors and connected devices for real-time monitoring</p>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-cloud"></i>
+                        <h4>Cloud Computing</h4>
+                        <p>Scalable infrastructure for processing and storing civic data</p>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h4>Mobile First</h4>
+                        <p>Responsive design optimized for smartphones and tablets</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-eye"></i> Civic Eye</h3>
+                <p>Building smarter cities through AI-powered civic solutions</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p><i class="fas fa-envelope"></i> support@civiceye.com</p>
+                <p><i class="fas fa-phone"></i> +91 9876543210</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Civic Eye. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

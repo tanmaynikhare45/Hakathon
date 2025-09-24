@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Eye - Leaderboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1><a href="{{ url_for('index') }}"><i class="fas fa-eye"></i> Civic Eye</a></h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{{ url_for('report_page') }}"><i class="fas fa-plus-circle"></i> Report Issue</a></li>
+                    <li><a href="{{ url_for('map_view_page') }}"><i class="fas fa-map"></i> Map View</a></li>
+                    <li><a href="{{ url_for('leaderboard_page') }}" class="active"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                    <li><a href="{{ url_for('home') }}"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <a href="{{ url_for('signup_page') }}" class="btn btn-small btn-primary">Get Started</a>
+                <a href="{{ url_for('login_page') }}" class="btn btn-small btn-secondary">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="container" style="padding: 40px 20px;">
+            <h2 style="margin-bottom: 20px; display:flex; align-items:center; gap:10px;"><i class="fas fa-trophy"></i> Citizen Leaderboard</h2>
+            <p class="section-subtitle">Top contributors by number of valid reports. (Placeholder)</p>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="fas fa-medal"></i>
+                    <h3>#1 Placeholder User</h3>
+                    <p>42 valid reports</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-medal"></i>
+                    <h3>#2 Placeholder User</h3>
+                    <p>30 valid reports</p>
+                </div>
+                <div class="feature-box">
+                    <i class="fas fa-medal"></i>
+                    <h3>#3 Placeholder User</h3>
+                    <p>21 valid reports</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <p>&copy; 2025 Civic Eye. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
+
+

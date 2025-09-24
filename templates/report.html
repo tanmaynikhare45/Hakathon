@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Issue - Civic Eye</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1><i class="fas fa-eye"></i> <a href="{{ url_for('home') }}">Civic Eye</a></h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="{{ url_for('report_page') }}" class="active"><i class="fas fa-plus-circle"></i> Report Issue</a></li>
+                    <li><a href="{{ url_for('track_page') }}"><i class="fas fa-search"></i> Track</a></li>
+                    <li><a href="{{ url_for('solutions_page') }}"><i class="fas fa-lightbulb"></i> Solutions</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                        <div class="alert alert-info">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="container">
+            <section class="report-section">
+                <h2><i class="fas fa-plus-circle"></i> Report a Civic Issue</h2>
+                <p class="section-subtitle">Help us improve your community by reporting civic issues</p>
+                
+                <form action="{{ url_for('submit_report') }}" method="post" enctype="multipart/form-data" class="report-form">
+                    <div class="form-group">
+                        <label for="issue_type"><i class="fas fa-tags"></i> Issue Type</label>
+                        <select name="issue_type" id="issue_type">
+                            <option value="">Let AI detect (recommended)</option>
+                            <option value="pothole">Pothole</option>
+                            <option value="garbage">Garbage/Waste</option>
+                            <option value="streetlight">Street Light</option>
+                            <option value="waterlogging">Water Logging</option>
+                            <option value="encroachment">Encroachment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description"><i class="fas fa-edit"></i> Description</label>
+                        <textarea name="description" id="description" rows="4" 
+                            placeholder="Describe the issue in detail. Our AI will help classify and process your complaint." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="image"><i class="fas fa-camera"></i> Upload Image</label>
+                        <div class="file-upload-area" onclick="document.getElementById('image').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload image or drag and drop</p>
+                            <p class="file-info">Supports: JPG, PNG, GIF, WEBP (Max 16MB)</p>
+                        </div>
+                        <input type="file" name="image" id="image" accept="image/*" style="display: none;">
+                        <div id="imagePreview" class="image-preview"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Location</label>
+                        <div class="location-group">
+                            <button type="button" id="getLocationBtn" class="btn btn-secondary">
+                                <i class="fas fa-crosshairs"></i> Get Current Location
+                            </button>
+                            <div class="location-inputs">
+                                <input type="number" name="latitude" id="latitude" placeholder="Latitude" step="any" readonly>
+                                <input type="number" name="longitude" id="longitude" placeholder="Longitude" step="any" readonly>
+                            </div>
+                        </div>
+                        <div id="mapContainer" class="map-container" style="display: none;">
+                            <div id="map" style="height: 300px; width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <i class="fas fa-paper-plane"></i> Submit Report
+                        </button>
+                        <a href="{{ url_for('home') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // File upload preview
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <div class="preview-item">
+                            <img src="${e.target.result}" alt="Preview">
+                            <p>${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</p>
+                        </div>
+                    `;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Location services
+        document.getElementById('getLocationBtn').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+                this.disabled = true;
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById('latitude').value = position.coords.latitude;
+                        document.getElementById('longitude').value = position.coords.longitude;
+                        document.getElementById('getLocationBtn').innerHTML = '<i class="fas fa-check"></i> Location detected';
+                        document.getElementById('getLocationBtn').classList.add('success');
+                    },
+                    function(error) {
+                        document.getElementById('getLocationBtn').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Location access denied';
+                        document.getElementById('getLocationBtn').classList.add('error');
+                        document.getElementById('getLocationBtn').disabled = false;
+                        console.error('Geolocation error:', error);
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        });
+    </script>
+</body>
+</html>

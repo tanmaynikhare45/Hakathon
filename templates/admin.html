@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Civic Eye</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1><i class="fas fa-eye"></i> <a href="{{ url_for('home') }}">Civic Eye</a> Admin</h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="{{ url_for('admin_page') }}" class="active"><i class="fas fa-cog"></i> Admin</a></li>
+                    <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                        <div class="alert alert-info">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="container">
+            <section class="admin-overview">
+                <h2><i class="fas fa-chart-line"></i> System Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon submitted">
+                            <i class="fas fa-paper-plane"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ reports|selectattr("status", "equalto", "submitted")|list|length }}</h3>
+                            <p>New Reports</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon in-progress">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ reports|selectattr("status", "equalto", "in_progress")|list|length }}</h3>
+                            <p>In Progress</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon resolved">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ reports|selectattr("status", "equalto", "resolved")|list|length }}</h3>
+                            <p>Resolved</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon flagged">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ reports|selectattr("fake", "equalto", true)|list|length }}</h3>
+                            <p>Flagged</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="showAdminTab('reports')">
+                        <i class="fas fa-list"></i> All Reports
+                    </button>
+                    <button class="tab-btn" onclick="showAdminTab('authorities')">
+                        <i class="fas fa-building"></i> Authorities
+                    </button>
+                </div>
+
+                <div id="reports" class="admin-tab-content active">
+                    <h3><i class="fas fa-list"></i> All Reports</h3>
+                    <div class="reports-table">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr class="{% if report.fake %}flagged{% endif %}">
+                                    <td>{{ report.report_id[:8] }}...</td>
+                                    <td>
+                                        <span class="issue-type {{ report.issue_type }}">
+                                            {{ report.issue_type.title() }}
+                                        </span>
+                                    </td>
+                                    <td class="description">{{ (report.text[:50] + '...') if report.text and report.text|length > 50 else (report.text or 'No description') }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ report.status }}">
+                                            {{ report.status.replace('_', ' ').title() }}
+                                        </span>
+                                        {% if report.fake %}
+                                            <span class="fake-flag" title="Flagged as potentially fake">⚠️</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ report.created_at[:10] }}</td>
+                                    <td class="actions">
+                                        <button class="btn-small btn-primary" onclick="viewReport('{{ report.report_id }}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-small btn-secondary" onclick="updateStatus('{{ report.report_id }}', '{{ report.status }}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="authorities" class="admin-tab-content">
+                    <h3><i class="fas fa-building"></i> Authority Management</h3>
+                    <div class="authorities-grid">
+                        {% for authority in authorities %}
+                        <div class="authority-card">
+                            <div class="authority-header">
+                                <h4>{{ authority.name }}</h4>
+                            </div>
+                            <div class="authority-details">
+                                <p><strong>Handles:</strong></p>
+                                <div class="handled-issues">
+                                    {% for issue in authority.handles %}
+                                        <span class="issue-tag">{{ issue.title() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="authority-actions">
+                                <button class="btn btn-small btn-primary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Status Update Modal -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Report Status</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form action="{{ url_for('update_status') }}" method="post">
+                <input type="hidden" id="modal-report-id" name="report_id">
+                <div class="form-group">
+                    <label for="status-select">New Status:</label>
+                    <select id="status-select" name="status" required>
+                        <option value="submitted">Submitted</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function showAdminTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.admin-tab-content');
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab and mark button as active
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[onclick="showAdminTab('${tabName}')"]`).classList.add('active');
+        }
+
+        function viewReport(reportId) {
+            // Implement report viewing functionality
+            window.location.href = '/api/status/' + reportId;
+        }
+
+        function updateStatus(reportId, currentStatus) {
+            document.getElementById('modal-report-id').value = reportId;
+            document.getElementById('status-select').value = currentStatus;
+            document.getElementById('statusModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('statusModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('statusModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

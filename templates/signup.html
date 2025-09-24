@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Eye - Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="auth-body">
+    <div class="auth-background">
+        <video autoplay muted loop class="bg-video">
+            <source src="{{ url_for('static', filename='bgvideo_1757355893673.mp4') }}" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        
+        <!-- Floating Elements -->
+        <div class="auth-floating-elements">
+            <div class="auth-floating-icon icon-1"><i class="fas fa-user-plus"></i></div>
+            <div class="auth-floating-icon icon-2"><i class="fas fa-envelope"></i></div>
+            <div class="auth-floating-icon icon-3"><i class="fas fa-id-card"></i></div>
+            <div class="auth-floating-icon icon-4"><i class="fas fa-users"></i></div>
+        </div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card signup-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-eye"></i>
+                    <span>Civic Eye</span>
+                </div>
+                <h2>Join Our Community</h2>
+                <p>Create your account to start reporting civic issues</p>
+            </div>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="auth-alert">
+                        {% for message in messages %}
+                            <div class="alert-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <form action="{{ url_for('signup') }}" method="post" class="auth-form">
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" name="name" placeholder="Full Name" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-at input-icon"></i>
+                        <input type="text" name="username" placeholder="Username" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" name="email" placeholder="Email Address" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="password" placeholder="Password" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="auth-btn">
+                    <span>Create Account</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="{{ url_for('login_page') }}">Sign In</a></p>
+                    <a href="{{ url_for('index') }}" class="back-link">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Home
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

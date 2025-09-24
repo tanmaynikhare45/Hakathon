@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Civic Eye</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1><i class="fas fa-eye"></i> <a href="{{ url_for('home') }}">Civic Eye</a></h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="{{ url_for('report_page') }}"><i class="fas fa-plus-circle"></i> Report Issue</a></li>
+                    <li><a href="{{ url_for('track_page') }}"><i class="fas fa-search"></i> Track</a></li>
+                    <li><a href="{{ url_for('solutions_page') }}"><i class="fas fa-lightbulb"></i> Solutions</a></li>
+                    <li><a href="{{ url_for('resources_page') }}"><i class="fas fa-book"></i> Resources</a></li>
+                    <li><a href="{{ url_for('about_page') }}" class="active"><i class="fas fa-info-circle"></i> About</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <section class="about-hero">
+                <h2><i class="fas fa-info-circle"></i> About Civic Eye</h2>
+                <p class="hero-description">
+                    Civic Eye is an AI-powered civic issue management platform built to make cities cleaner, safer, and smarter. 
+                    We empower citizens to report issues instantly while ensuring authorities receive accurate and actionable insights.
+                </p>
+            </section>
+
+            <div class="about-content">
+                <div class="mission-vision-values">
+                    <div class="mvv-card">
+                        <div class="mvv-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3>Our Mission</h3>
+                        <p>To create a transparent, efficient, and responsive system for civic issue redressal using cutting-edge AI technology. We bridge the gap between citizens and authorities, making urban governance more accessible and effective.</p>
+                    </div>
+
+                    <div class="mvv-card">
+                        <div class="mvv-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3>Our Vision</h3>
+                        <p>Smarter, sustainable cities where every citizen has a voice in shaping their community. We envision a future where technology seamlessly integrates with civic life, creating transparent and accountable governance systems.</p>
+                    </div>
+
+                    <div class="mvv-card">
+                        <div class="mvv-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>Our Values</h3>
+                        <p>Transparency, Accountability, Innovation, and Citizen Empowerment guide everything we do. We believe in open governance, reliable service delivery, and putting citizens at the center of urban development.</p>
+                    </div>
+                </div>
+
+                <section class="case-study-section">
+                    <div class="case-study">
+                        <img src="{{ url_for('static', filename='images/case study_1757355893674.jpg') }}" alt="Civic Eye Case Study" class="case-study-image">
+                        <div class="case-study-content">
+                            <h2><i class="fas fa-chart-line"></i> Proven Results</h2>
+                            <p>Our case studies demonstrate significant improvements in response times, citizen satisfaction, and municipal efficiency across multiple cities.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="story-section">
+                    <h2><i class="fas fa-book-open"></i> Our Story</h2>
+                    <div class="story-content">
+                        <div class="story-text">
+                            <p>Civic Eye was born from a simple observation: despite living in the digital age, reporting and tracking civic issues remained frustratingly analog. Citizens would call helplines, send emails that went unanswered, or simply give up on reporting problems in their communities.</p>
+                            
+                            <p>Founded in 2024, our team of technologists, urban planners, and civic enthusiasts came together with a shared vision: to harness the power of artificial intelligence to create a more responsive and transparent civic governance system.</p>
+                            
+                            <p>Today, Civic Eye serves multiple cities across India, processing thousands of civic issue reports monthly and helping authorities respond more efficiently to community needs.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="features-section">
+                    <h2><i class="fas fa-cogs"></i> What Makes Us Different</h2>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-brain"></i>
+                            <h4>AI-First Approach</h4>
+                            <p>Our platform uses advanced machine learning for automatic issue classification, duplicate detection, and intelligent routing to the right authorities.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <h4>Mobile-Optimized</h4>
+                            <p>Designed with a mobile-first approach, making it easy for citizens to report issues anytime, anywhere, using just their smartphone.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-lock"></i>
+                            <h4>Privacy-Focused</h4>
+                            <p>We prioritize user privacy and data security, ensuring that personal information is protected while maintaining transparency in governance.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-line"></i>
+                            <h4>Data-Driven Insights</h4>
+                            <p>Authorities get actionable insights and analytics to improve service delivery and make informed decisions about urban infrastructure.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="cta-section">
+                    <h2><i class="fas fa-hands-helping"></i> Join Our Mission</h2>
+                    <p>Be part of the movement to create smarter, more responsive cities. Whether you're a citizen reporting issues, an authority improving services, or a developer contributing to the platform, there's a place for you in the Civic Eye community.</p>
+                    <div class="cta-buttons">
+                        <a href="{{ url_for('report_page') }}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Report an Issue
+                        </a>
+                        <a href="{{ url_for('contact_page') }}" class="btn btn-secondary">
+                            <i class="fas fa-envelope"></i> Get in Touch
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-eye"></i> Civic Eye</h3>
+                <p>AI-based civic issue detection and grievance redressal system</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p><i class="fas fa-map-marker-alt"></i> Pune, India</p>
+                <p><i class="fas fa-phone"></i> +91 9876543210</p>
+                <p><i class="fas fa-envelope"></i> support@civiceye.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Civic Eye. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

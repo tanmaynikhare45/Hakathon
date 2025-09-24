@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Eye - Map View</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        .map-container {
+            position: relative;
+            height: 600px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .map-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .map-control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .map-control-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .map-legend {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            min-width: 200px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .map-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0072ff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            border-radius: 15px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0072ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1><a href="{{ url_for('index') }}"><i class="fas fa-eye"></i> Civic Eye</a></h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{{ url_for('report_page') }}"><i class="fas fa-plus-circle"></i> Report Issue</a></li>
+                    <li><a href="{{ url_for('map_view_page') }}" class="active"><i class="fas fa-map"></i> Map View</a></li>
+                    <li><a href="{{ url_for('leaderboard_page') }}"><i class="fas fa-trophy"></i> Leaderboard</a></li>
+                    <li><a href="{{ url_for('home') }}"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <a href="{{ url_for('signup_page') }}" class="btn btn-small btn-primary">Get Started</a>
+                <a href="{{ url_for('login_page') }}" class="btn btn-small btn-secondary">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="container" style="padding: 40px 20px;">
+            <h2 style="margin-bottom: 20px; display:flex; align-items:center; gap:10px;"><i class="fas fa-map"></i> City Issues Map</h2>
+            <p class="section-subtitle">Interactive map showing reported civic issues across the city</p>
+            
+            <!-- Map Statistics -->
+            <div class="map-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-issues">0</div>
+                    <div class="stat-label">Total Issues</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="resolved-issues">0</div>
+                    <div class="stat-label">Resolved</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pending-issues">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="in-progress-issues">0</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            </div>
+            
+            <!-- Map Container -->
+            <div class="map-container">
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="loading-spinner"></div>
+                </div>
+                
+                <div id="map"></div>
+                
+                <!-- Map Controls -->
+                <div class="map-controls">
+                    <button class="map-control-btn" onclick="centerMap()">
+                        <i class="fas fa-crosshairs"></i>
+                        Center Map
+                    </button>
+                    <button class="map-control-btn" onclick="toggleMarkers()">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="marker-toggle-text">Hide Markers</span>
+                    </button>
+                    <button class="map-control-btn" onclick="showHeatmap()">
+                        <i class="fas fa-fire"></i>
+                        Heat Map
+                    </button>
+                </div>
+                
+                <!-- Map Legend -->
+                <div class="map-legend">
+                    <h4 style="margin: 0 0 10px 0; font-size: 1rem;">Issue Types</h4>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff6b6b;"></div>
+                        <span>Potholes</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4ecdc4;"></div>
+                        <span>Garbage</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #45b7d1;"></div>
+                        <span>Street Lights</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #96ceb4;"></div>
+                        <span>Waterlogging</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffeaa7;"></div>
+                        <span>Other</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <p>&copy; 2025 Civic Eye. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script>
+        let map;              // Leaflet map instance
+        let markersLayer;     // Layer group for markers
+        let heatLayer = null; // Heatmap layer
+        let markersVisible = true;
+
+        const pune = { lat: 18.5204, lng: 73.8567 };
+
+        const issueColors = {
+            'pothole': '#ff6b6b',
+            'garbage': '#4ecdc4',
+            'streetlight': '#45b7d1',
+            'waterlogging': '#96ceb4',
+            'other': '#ffeaa7'
+        };
+
+        const sampleIssues = [
+            { id: 1, type: 'pothole', lat: 18.5204, lng: 73.8567, title: 'Large Pothole on Main Road', description: 'Deep pothole causing traffic issues', status: 'pending', date: '2025-01-15' },
+            { id: 2, type: 'garbage', lat: 18.5304, lng: 73.8667, title: 'Garbage Accumulation', description: 'Uncollected garbage for 3 days', status: 'in_progress', date: '2025-01-14' },
+            { id: 3, type: 'streetlight', lat: 18.5404, lng: 73.8767, title: 'Broken Street Light', description: 'Street light not working', status: 'resolved', date: '2025-01-13' },
+            { id: 4, type: 'waterlogging', lat: 18.5504, lng: 73.8867, title: 'Waterlogging Issue', description: 'Heavy waterlogging after rain', status: 'pending', date: '2025-01-12' },
+            { id: 5, type: 'pothole', lat: 18.5604, lng: 73.8967, title: 'Multiple Potholes', description: 'Several potholes on this stretch', status: 'in_progress', date: '2025-01-11' }
+        ];
+
+        function getStatusColor(status) {
+            const colors = { 'pending': '#ffc107', 'in_progress': '#17a2b8', 'resolved': '#28a745', 'rejected': '#dc3545', 'submitted': '#6c757d' };
+            return colors[status] || '#6c757d';
+        }
+
+        function buildPopup(issue) {
+            return `
+                <div style="padding: 6px 2px; max-width: 240px;">
+                    <h4 style="margin: 0 0 8px 0; color: #333;">${issue.title}</h4>
+                    <p style="margin: 0 0 8px 0; color: #666; font-size: 0.9rem;">${issue.description || 'No description available'}</p>
+                    <div style=\"display:flex; justify-content:space-between; align-items:center;\"> 
+                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background: ${getStatusColor(issue.status)}; color: white;">${(issue.status || '').replace('_',' ').toUpperCase()}</span>
+                        <span style="font-size: 0.8rem; color: #999;">${issue.date || ''}</span>
+                    </div>
+                </div>`;
+        }
+
+        function addMarkers(issues) {
+            markersLayer.clearLayers();
+            issues.forEach(issue => {
+                const lat = issue.lat ?? (issue.location && parseFloat(issue.location.latitude));
+                const lng = issue.lng ?? (issue.location && parseFloat(issue.location.longitude));
+                if (typeof lat !== 'number' || typeof lng !== 'number') return;
+
+                const marker = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    color: '#ffffff',
+                    weight: 2,
+                    fillColor: issueColors[issue.type] || issueColors.other,
+                    fillOpacity: 0.9
+                }).bindPopup(buildPopup(issue));
+
+                markersLayer.addLayer(marker);
+            });
+        }
+
+        function buildHeat(issues) {
+            return issues
+                .map(issue => {
+                    const lat = issue.lat ?? (issue.location && parseFloat(issue.location.latitude));
+                    const lng = issue.lng ?? (issue.location && parseFloat(issue.location.longitude));
+                    if (typeof lat !== 'number' || typeof lng !== 'number') return null;
+                    return [lat, lng, 0.6];
+                })
+                .filter(Boolean);
+        }
+
+        async function loadIssues() {
+            try {
+                const res = await fetch('/api/reports');
+                const apiIssues = await res.json();
+                return apiIssues.map(i => ({
+                    id: i.report_id,
+                    type: i.issue_type,
+                    lat: i.location && i.location.latitude ? parseFloat(i.location.latitude) : undefined,
+                    lng: i.location && i.location.longitude ? parseFloat(i.location.longitude) : undefined,
+                    title: (i.issue_type || 'Issue').replace(/^./, c => c.toUpperCase()),
+                    description: i.text,
+                    status: i.status,
+                    date: new Date(i.created_at).toLocaleDateString()
+                }));
+            } catch (e) {
+                console.warn('Falling back to sample issues:', e);
+                return sampleIssues;
+            }
+        }
+
+        async function updateStatistics(issues) {
+            const stats = {
+                total: issues.length,
+                resolved: issues.filter(i => i.status === 'resolved').length,
+                pending: issues.filter(i => i.status === 'pending' || i.status === 'submitted').length,
+                in_progress: issues.filter(i => i.status === 'in_progress').length
+            };
+            document.getElementById('total-issues').textContent = stats.total;
+            document.getElementById('resolved-issues').textContent = stats.resolved;
+            document.getElementById('pending-issues').textContent = stats.pending;
+            document.getElementById('in-progress-issues').textContent = stats.in_progress;
+        }
+
+        async function initMap() {
+            map = L.map('map', { zoomControl: true }).setView([pune.lat, pune.lng], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            markersLayer = L.layerGroup().addTo(map);
+
+            const issues = await loadIssues();
+            addMarkers(issues);
+            await updateStatistics(issues);
+
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        function centerMap() {
+            if (!map) return;
+            map.setView([pune.lat, pune.lng], 12);
+        }
+
+        function toggleMarkers() {
+            markersVisible = !markersVisible;
+            if (markersVisible) {
+                markersLayer.addTo(map);
+            } else {
+                map.removeLayer(markersLayer);
+            }
+            const toggleText = document.getElementById('marker-toggle-text');
+            toggleText.textContent = markersVisible ? 'Hide Markers' : 'Show Markers';
+        }
+
+        async function showHeatmap() {
+            if (heatLayer) {
+                map.removeLayer(heatLayer);
+                heatLayer = null;
+                return;
+            }
+            const issues = await loadIssues();
+            const points = buildHeat(issues);
+            heatLayer = L.heatLayer(points, { radius: 30, blur: 20, maxZoom: 17, minOpacity: 0.4 }).addTo(map);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+        });
+    </script>
+</body>
+</html>
+
+

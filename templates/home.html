@@ -143,5 +143,24 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Chatbot Button -->
+<div id="chatbot-icon">
+    <img src="{{ url_for('static', filename='chatbotimg.jpg') }}" alt="Chatbot" />
+    </div>
+
+    <!-- Chatbot Window -->
+    <div id="chatbot-window">
+    <div id="chatbot-header">AI Chatbot</div>
+    <div id="chatbot-messages"></div>
+    <div id="chatbot-input">
+        <input type="text" id="user-input" placeholder="Ask me something..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    </div>
+
+    <!-- Chatbot CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
+    <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+
 </body>
 </html>

@@ -6,6 +6,11 @@ import warnings
 from datetime import datetime
 from dataclasses import asdict
 
+from flask import Flask, render_template, request, jsonify
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -18,6 +23,8 @@ from ai.fake_detection import FakeReportDetector
 from ai.complaint_writer import ComplaintWriter
 from storage.db import CivicDB, ReportRecord
 from utils.gps import normalize_location
+
+
 
 # Configure logging (default INFO). Allow override via LOG_LEVEL env.
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()

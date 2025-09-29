@@ -147,14 +147,10 @@ def create_app() -> Flask:
     def resources_page():
         return render_template('resources.html')
     
-    # New: Map View and Leaderboard
+    # New: Map View
     @app.route('/map')
     def map_view_page():
         return render_template('map.html')
-
-    @app.route('/leaderboard')
-    def leaderboard_page():
-        return render_template('leaderboard.html')
 
     @app.route('/about')
     def about_page():

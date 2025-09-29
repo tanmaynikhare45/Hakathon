@@ -6,6 +6,13 @@
     <title>Report Issue - Civic Eye</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Leaflet CSS for in-form map preview -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
 </head>
 <body>
     <header class="main-header">
@@ -76,8 +83,8 @@
                                 <i class="fas fa-crosshairs"></i> Get Current Location
                             </button>
                             <div class="location-inputs">
-                                <input type="number" name="latitude" id="latitude" placeholder="Latitude" step="any" readonly>
-                                <input type="number" name="longitude" id="longitude" placeholder="Longitude" step="any" readonly>
+                                <input type="number" name="latitude" id="latitude" placeholder="Latitude" step="any">
+                                <input type="number" name="longitude" id="longitude" placeholder="Longitude" step="any">
                             </div>
                         </div>
                         <div id="mapContainer" class="map-container" style="display: none;">
@@ -99,6 +106,12 @@
     </main>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Leaflet JS for map preview -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <script>
         // File upload preview
         document.getElementById('image').addEventListener('change', function(e) {
@@ -120,23 +133,94 @@
             }
         });
 
-        // Location services
+        // --- Inline map preview + coordinate sync ---
+        let inlineMap = null;
+        let inlineMarker = null;
+
+        function showInlineMap() {
+            const container = document.getElementById('mapContainer');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+            }
+        }
+
+        function initializeMap(lat, lng) {
+            // Exposed so main.js can call it after geolocation
+            showInlineMap();
+            const defaultLat = parseFloat(lat) || 18.5204; // Pune fallback
+            const defaultLng = parseFloat(lng) || 73.8567;
+
+            if (!inlineMap) {
+                inlineMap = L.map('map').setView([defaultLat, defaultLng], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(inlineMap);
+
+                inlineMap.on('click', function(e) {
+                    const { lat, lng } = e.latlng;
+                    setInputs(lat, lng);
+                    updateMarker(lat, lng);
+                });
+            }
+
+            updateMarker(defaultLat, defaultLng);
+        }
+
+        function setInputs(lat, lng) {
+            const latEl = document.getElementById('latitude');
+            const lngEl = document.getElementById('longitude');
+            latEl.value = Number(lat).toFixed(6);
+            lngEl.value = Number(lng).toFixed(6);
+        }
+
+        function updateMarker(lat, lng) {
+            showInlineMap();
+            if (!inlineMap) {
+                initializeMap(lat, lng);
+                return;
+            }
+            if (inlineMarker) {
+                inlineMap.removeLayer(inlineMarker);
+            }
+            inlineMarker = L.marker([lat, lng]).addTo(inlineMap);
+            inlineMap.setView([lat, lng], inlineMap.getZoom() || 14);
+        }
+
+        function tryUpdateFromInputs() {
+            const latVal = parseFloat(document.getElementById('latitude').value);
+            const lngVal = parseFloat(document.getElementById('longitude').value);
+            if (!isNaN(latVal) && !isNaN(lngVal)) {
+                initializeMap(latVal, lngVal);
+            }
+        }
+
+        // Wire manual typing to map updates
+        document.getElementById('latitude').addEventListener('input', tryUpdateFromInputs);
+        document.getElementById('longitude').addEventListener('input', tryUpdateFromInputs);
+
+        // Keep existing geolocation button behavior but also show on map
         document.getElementById('getLocationBtn').addEventListener('click', function() {
             if (navigator.geolocation) {
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
                 this.disabled = true;
-                
+
                 navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        document.getElementById('latitude').value = position.coords.latitude;
-                        document.getElementById('longitude').value = position.coords.longitude;
-                        document.getElementById('getLocationBtn').innerHTML = '<i class="fas fa-check"></i> Location detected';
-                        document.getElementById('getLocationBtn').classList.add('success');
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        setInputs(lat, lng);
+                        initializeMap(lat, lng);
+                        const btn = document.getElementById('getLocationBtn');
+                        btn.innerHTML = '<i class="fas fa-check"></i> Location detected';
+                        btn.classList.add('success');
+                        btn.disabled = false;
                     },
-                    function(error) {
-                        document.getElementById('getLocationBtn').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Location access denied';
-                        document.getElementById('getLocationBtn').classList.add('error');
-                        document.getElementById('getLocationBtn').disabled = false;
+                    (error) => {
+                        const btn = document.getElementById('getLocationBtn');
+                        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Location access denied';
+                        btn.classList.add('error');
+                        btn.disabled = false;
                         console.error('Geolocation error:', error);
                     }
                 );

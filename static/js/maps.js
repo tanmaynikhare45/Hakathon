@@ -162,12 +162,13 @@ function createMarker(issue) {
         map: map,
         title: issue.title,
         icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 12,
+            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+            scale: 6,
             fillColor: issueColors[issue.type] || issueColors.other,
-            fillOpacity: 0.8,
+            fillOpacity: 0.9,
             strokeColor: '#ffffff',
-            strokeWeight: 2
+            strokeWeight: 2,
+            rotation: 0
         }
     });
     

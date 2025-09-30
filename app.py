@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import time
 import logging
@@ -18,6 +19,29 @@ from ai.fake_detection import FakeReportDetector
 from ai.complaint_writer import ComplaintWriter
 from storage.db import CivicDB, ReportRecord
 from utils.gps import normalize_location
+
+# Optional OpenAI client (SDK v1). Falls back to rule-based replies if unavailable.
+try:
+    from openai import OpenAI  # type: ignore
+except Exception:
+    OpenAI = None  # type: ignore
+
+_openai_client_cache = None
+
+def _get_openai_client():
+    global _openai_client_cache
+    if _openai_client_cache is not None:
+        return _openai_client_cache
+    if OpenAI is None:
+        return None
+    # Only create if key is present
+    if not os.getenv("OPENAI_API_KEY"):
+        return None
+    try:
+        _openai_client_cache = OpenAI()
+        return _openai_client_cache
+    except Exception:
+        return None
 
 # Configure logging (default INFO). Allow override via LOG_LEVEL env.
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -368,6 +392,90 @@ def create_app() -> Flask:
         if not record:
             return jsonify({"error": "not_found"}), 404
         return jsonify(asdict(record))
+    
+    # Chatbot route
+    @app.route('/chatbot', methods=['POST'])
+    def chatbot_reply():
+        try:
+            payload = request.get_json(silent=True) or {}
+            message = (payload.get('message') or '').strip()
+            if not message:
+                return jsonify({"reply": "Please type a message."})
+
+            txt = message.lower()
+
+            # Simple intents/FAQ (ordered: more specific first)
+            responses = [
+                (['status', 'track', 'tracking'], "Use the Track page and enter your complaint ID to see the latest status."),
+                (['report', 'complaint', 'file'], "To file a complaint, go to Report Issue, add a description, optional photo, and location, then submit."),
+                (['login', 'signup', 'account'], "Use the Login/Sign Up pages in the header. Passwords are stored securely."),
+                (['map'], "The Map View shows recent issues pinned to their locations."),
+                (['mongodb', 'mongo'], "This app uses MongoDB Atlas. Configure MONGODB_URI and MONGODB_DB in the .env file to connect."),
+                (['admin'], "Admins and authorities can review and update statuses from the Admin page."),
+                (['hello', 'hi', 'hey'], "Hello! How can I help you with Civic Eye today?"),
+                (['help', 'support'], "You can report issues via 'Report Issue', track them under 'Track', or view insights on the dashboard."),
+            ]
+
+            def any_keyword_in_text(text: str, keywords: list[str]) -> bool:
+                for k in keywords:
+                    if re.search(r"\b" + re.escape(k) + r"\b", text):
+                        return True
+                return False
+
+            for keywords, reply in responses:
+                if any_keyword_in_text(txt, keywords):
+                    return jsonify({"reply": reply})
+
+            # If OpenAI is configured and SDK is available, generate an AI answer
+            _openai_client = _get_openai_client()
+            if _openai_client:
+                debug = os.getenv("CHATBOT_DEBUG") == "1"
+                try:
+                    system_prompt = (
+                        "You are Civic Eye, a concise assistant for a civic issue reporting web app. "
+                        "Answer user questions about reporting issues, tracking complaints, authentication, map view, and general guidance. "
+                        "If asked something outside app scope, politely provide a brief helpful answer. Keep replies under 6 lines."
+                    )
+                    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+                    # Try the Responses API first
+                    try:
+                        resp = _openai_client.responses.create(
+                            model=model,
+                            input=f"System: {system_prompt}\nUser: {message}"
+                        )
+                        ai_text = getattr(resp, "output_text", None) or str(resp)
+                        ai_text = ai_text.strip()[:1200]
+                        if debug:
+                            ai_text = "[AI:responses] " + ai_text
+                        return jsonify({"reply": ai_text})
+                    except Exception as inner:
+                        logging.getLogger(__name__).info("Responses API failed, trying Chat Completions: %s", inner)
+
+                    # Fallback: Chat Completions API (older SDKs)
+                    try:
+                        chat = _openai_client.chat.completions.create(
+                            model=model,
+                            messages=[
+                                {"role": "system", "content": system_prompt},
+                                {"role": "user", "content": message},
+                            ],
+                            temperature=0.5,
+                        )
+                        ai_text = (chat.choices[0].message.content or "").strip()[:1200]
+                        if debug:
+                            ai_text = "[AI:chat] " + ai_text
+                        return jsonify({"reply": ai_text})
+                    except Exception as inner2:
+                        logging.getLogger(__name__).warning("OpenAI chat completion failed: %s", inner2)
+                except Exception as exc:
+                    logging.getLogger(__name__).warning("OpenAI reply failed: %s", exc)
+
+            # Default fallback
+            return jsonify({"reply": "I didn't catch that. You can ask about reporting, tracking status, map view, login/signup, or MongoDB setup."})
+        except Exception as exc:
+            logging.getLogger(__name__).exception("Chatbot error: %s", exc)
+            return jsonify({"reply": "Sorry, something went wrong handling your message."}), 200
     
     return app
 

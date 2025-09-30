@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+*.log
+
+# Environment and secrets
+.env
+.env.*
+*.key
+*.pem
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Uploads and generated media
+uploads/
+
+# Node (if any front-end tooling is added later)
+node_modules/
+
+# Cache
+.cache/
+.dist/
+.build/

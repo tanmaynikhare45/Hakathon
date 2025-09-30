@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pymongo import MongoClient
-from passlib.hash import bcrypt
+from passlib.context import CryptContext
 from bson.objectid import ObjectId
 
 # Attempt to use system CA certificates for TLS connections (e.g., MongoDB Atlas)
@@ -14,6 +14,11 @@ try:
 except Exception:  # pragma: no cover - optional dependency
     certifi = None  # type: ignore
     _CA_FILE = None
+
+# Password hashing context
+# Use pbkdf2_sha256 to avoid bcrypt backend issues & 72-byte limit
+# Note: Existing users hashed with bcrypt won't validate; recreate them.
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 @dataclass
 class ReportRecord:
@@ -73,7 +78,7 @@ class CivicDB:
     def verify_password(self, user: dict, password: str) -> bool:
         """Verify password hash"""
         try:
-            return bcrypt.verify(password, user.get("password", ""))
+            return pwd_context.verify(password, user.get("password", ""))
         except Exception:
             logging.getLogger(__name__).exception("Password verification failed")
             return False
@@ -89,7 +94,7 @@ class CivicDB:
             user = {
                 "username": username,
                 "email": email,
-                "password": bcrypt.hash(password),
+                "password": pwd_context.hash(password),
                 "name": name,
                 "role": "citizen",
                 "created_at": datetime.utcnow()

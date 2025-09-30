@@ -7,6 +7,11 @@ import warnings
 from datetime import datetime
 from dataclasses import asdict
 
+from flask import Flask, render_template, request, jsonify
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -19,6 +24,8 @@ from ai.fake_detection import FakeReportDetector
 from ai.complaint_writer import ComplaintWriter
 from storage.db import CivicDB, ReportRecord
 from utils.gps import normalize_location
+
+
 
 # Optional OpenAI client (SDK v1). Falls back to rule-based replies if unavailable.
 try:
